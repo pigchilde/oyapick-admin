@@ -38,6 +38,14 @@ async function refresh() {
 	svg.value = '';
 	base64.value = '';
 
+	if (!service?.base?.open?.captcha) {
+		ElMessageBox.alert(t('验证码服务未就绪，请检查构建环境配置'), {
+			title: t('提示'),
+			type: 'error'
+		});
+		return;
+	}
+
 	await service.base.open
 		.captcha({
 			height: 45,

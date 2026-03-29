@@ -118,6 +118,13 @@ async function toLogin() {
 		return ElMessage.error(t('图片验证码不能为空'));
 	}
 
+	if (!service?.base?.open?.login) {
+		return ElMessageBox.alert(t('登录服务未就绪，请检查构建环境配置'), {
+			title: t('提示'),
+			type: 'error'
+		});
+	}
+
 	saving.value = true;
 
 	try {

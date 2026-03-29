@@ -17,6 +17,18 @@ export async function updateProxy(data: { name: string }) {
 }
 
 export function getProxyTarget(proxy: any) {
+	const envValue = process.env.VITE_PROXY_ENV || process.env.COOL_PROXY_ENV;
+
+	if (envValue) {
+		try {
+			const { target, rewrite } = proxy[`/${envValue}/`];
+			return target + rewrite(`/${envValue}`);
+		} catch (err) {
+			error(`[cool-proxy] Error：${envValue} (from env) → ` + getPath());
+			return "";
+		}
+	}
+
 	const code = readFile(getPath());
 
 	const regex = /const\s+value\s*=\s*['"]([^'"]+)['"]/;

@@ -13,6 +13,23 @@ const proxy = {
 };
 
 const value = 'dev';
-const host = proxy[`/${value}/`]?.target;
+const envValue =
+	(typeof process !== 'undefined' ? process.env.VITE_PROXY_ENV : '') ||
+	(import.meta as any)?.env?.VITE_PROXY_ENV ||
+	'';
+const current = envValue || value;
 
-export { proxy, host, value };
+if (current !== value && proxy[`/${current}/`]) {
+	const currentProxy = proxy[`/${current}/`];
+	proxy[`/${value}/`] = {
+		...currentProxy,
+		rewrite: (path: string) => {
+			const normalizePath = path.replace(new RegExp(`^\\/${value}`), `/${current}`);
+			return currentProxy.rewrite(normalizePath);
+		}
+	};
+}
+
+const host = proxy[`/${current}/`]?.target;
+
+export { proxy, host, value, current };

@@ -28,6 +28,13 @@ export const useUserStore = defineStore('user', function () {
 	// 刷新标识
 	async function refreshToken(): Promise<string> {
 		return new Promise((resolve, reject) => {
+			if (!service?.base?.open?.refreshToken) {
+				const err = new Error('刷新令牌服务未就绪，请检查构建环境配置');
+				logout();
+				reject(err);
+				return;
+			}
+
 			service.base.open
 				.refreshToken({
 					refreshToken: storage.get('refreshToken')

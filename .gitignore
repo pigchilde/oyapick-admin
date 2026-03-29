@@ -10,6 +10,12 @@ dist/
 .idea/
 run/
 build/
+!build/
+build/*
+!build/cool/
+build/cool/*
+!build/cool/eps.json
+!build/cool/eps.d.ts
 .DS_Store
 launch.json
 *.sw*
@@ -17,6 +23,7 @@ launch.json
 .tsbuildinfo
 .tsbuildinfo.*
 data/*
-pnpm-lock.yaml
+**/pnpm-lock.yaml
+!/pnpm-lock.yaml
 public/uploads/*
 ./claude
