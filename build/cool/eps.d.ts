@@ -1422,7 +1422,7 @@ declare namespace Eps {
 		title?: string;
 
 		/**
-		 * 支付方式 0-待支付 1-微信 2-支付宝
+		 * 支付方式 0-待支付 1-Opay 2-其他
 		 */
 		payType?: number;
 
@@ -1718,9 +1718,9 @@ declare namespace Eps {
 		endTime?: Date;
 
 		/**
-		 * 每小时参与次数
+		 * 目标购买总份数
 		 */
-		countPerHour?: number;
+		targetTotal?: number;
 
 		/**
 		 * 每次最少购买份数

@@ -11,6 +11,6 @@ export const OrderStatus = [
 
 export const PayType = [
 	{ label: "待支付", value: 0, type: "info" },
-	{ label: "微信", value: 1, color: "#2aae67" },
-	{ label: "支付宝", value: 2, color: "#1678FF" }
+	{ label: "Opay", value: 1, color: "#2aae67" },
+	{ label: "其他", value: 2, color: "#1678FF" }
 ];

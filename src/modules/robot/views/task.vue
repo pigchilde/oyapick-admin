@@ -16,7 +16,6 @@
 			<cl-flex1 />
 			<cl-search-key placeholder="搜索备注" />
 
-			<el-button type="primary" @click="runOnceAll">执行一次(全部运行中)</el-button>
 		</cl-row>
 
 		<cl-row>
@@ -33,12 +32,13 @@
 
 	<el-dialog v-model="previewVisible" title="计划预览" width="560px">
 		<el-descriptions :column="1" border v-if="previewResult">
-			<el-descriptions-item label="预计参与次数">{{ previewResult.expectedCount }}</el-descriptions-item>
+			<el-descriptions-item label="目标购买总份数">{{ previewResult.targetTotal }}</el-descriptions-item>
+			<el-descriptions-item label="已计划份数">{{ previewResult.scheduledShares }}</el-descriptions-item>
+			<el-descriptions-item label="剩余目标份数">{{ previewResult.remainingTarget }}</el-descriptions-item>
 			<el-descriptions-item label="预计最小份数">{{ previewResult.expectedMinShares }}</el-descriptions-item>
 			<el-descriptions-item label="预计最大份数">{{ previewResult.expectedMaxShares }}</el-descriptions-item>
 			<el-descriptions-item label="机器人总数">{{ previewResult.robotTotal }}</el-descriptions-item>
 			<el-descriptions-item label="可用机器人">{{ previewResult.availableRobotCount ?? '-' }}</el-descriptions-item>
-			<el-descriptions-item label="滚动窗口上限">{{ previewResult.rollingWindowLimit }}</el-descriptions-item>
 			<el-descriptions-item label="剩余库存">{{ previewResult.remainingShares ?? '-' }}</el-descriptions-item>
 			<el-descriptions-item label="库存是否可能限制">
 				<el-tag :type="previewResult.inventoryMayLimit ? 'warning' : 'success'">
@@ -118,7 +118,7 @@ const Table = useTable({
 		{ label: '商品ID', prop: 'goodsId', minWidth: 100 },
 		{ label: '开始时间', prop: 'startTime', minWidth: 160 },
 		{ label: '结束时间', prop: 'endTime', minWidth: 160 },
-		{ label: '每小时参与次数', prop: 'countPerHour', minWidth: 140 },
+		{ label: '目标购买总份数', prop: 'targetTotal', minWidth: 140 },
 		{ label: '购买区间', prop: 'buyRange', minWidth: 120 },
 		{ label: '机器人间隔(分钟)', prop: 'sameRobotMinIntervalMinutes', minWidth: 140 },
 		{ label: '同机器人最大参与', prop: 'sameRobotMaxBuysPerGoods', minWidth: 140 },
@@ -215,13 +215,13 @@ const Upsert = useUpsert({
 			}
 		},
 		{
-			label: '每小时参与次数',
-			prop: 'countPerHour',
-			value: 6,
+			label: '目标购买总份数',
+			prop: 'targetTotal',
+			value: 100,
 			required: true,
 			component: {
 				name: 'el-input-number',
-				props: { min: 1, max: 2000 }
+				props: { min: 1, max: 1000000 }
 			}
 		},
 		{
@@ -389,7 +389,7 @@ async function preview(row: any) {
 		goodsId: row.goodsId,
 		startTime: row.startTime,
 		endTime: row.endTime,
-		countPerHour: row.countPerHour,
+		targetTotal: row.targetTotal,
 		minBuyCount: row.minBuyCount,
 		maxBuyCount: row.maxBuyCount,
 		sameRobotMinIntervalMinutes: row.sameRobotMinIntervalMinutes,
