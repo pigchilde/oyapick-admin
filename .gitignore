@@ -27,3 +27,4 @@ data/*
 !/pnpm-lock.yaml
 public/uploads/*
 ./claude
+.env
