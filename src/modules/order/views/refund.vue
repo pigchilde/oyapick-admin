@@ -12,6 +12,21 @@
 				<cl-select :options="options.status" prop="status" :width="140" />
 			</cl-filter>
 
+			<cl-filter label="商品ID">
+				<cl-select
+					:options="options.goods"
+					prop="goodsId"
+					:width="220"
+					clearable
+					filterable
+					placeholder="请选择商品"
+				/>
+			</cl-filter>
+
+			<cl-filter label="用户类型">
+				<cl-select :options="options.userType" prop="isRobot" :width="140" clearable />
+			</cl-filter>
+
 			<cl-filter label="申请时间">
 				<cl-date-picker prop="refundApply" type="datetimerange" />
 			</cl-filter>
@@ -40,7 +55,7 @@
 <script lang="ts" name="order-refund" setup>
 import { useCrud, useForm, useTable } from "@cool-vue/crud";
 import { useCool } from "/@/cool";
-import { reactive, ref } from "vue";
+import { onMounted, reactive, ref } from "vue";
 import { ElMessage } from "element-plus";
 import OrderUserItem from "../components/user-item.vue";
 import OrderLogisticsItem from "../components/logistics-item.vue";
@@ -56,6 +71,11 @@ const options = reactive({
 	payType: [
 		{ label: "微信", value: 1, color: "#2aae67" },
 		{ label: "支付宝", value: 2, color: "1678FF" }
+	],
+	goods: [] as Array<{ label: string; value: number }>,
+	userType: [
+		{ label: "真人", value: 0 },
+		{ label: "机器人", value: 1 }
 	],
 	status: [
 		{ label: "申请中", value: 0, type: "info" },
@@ -199,6 +219,32 @@ function onSummaryMethod() {
 	return ["合计", "", "", subData.value.totalPrice + " 元"];
 }
 
+async function fetchGoods() {
+	try {
+		const size = 500;
+		let page = 1;
+		const allGoods: any[] = [];
+
+		while (true) {
+			const res = await service.goods.info.page({ page, size });
+			const list = Array.isArray(res?.list) ? res.list : [];
+			allGoods.push(...list);
+
+			if (list.length < size) {
+				break;
+			}
+			page += 1;
+		}
+
+		options.goods = allGoods.map((g: any) => ({
+			label: `${g.id} - ${g.title}`,
+			value: g.id
+		}));
+	} catch (err) {
+		console.error(err);
+	}
+}
+
 // 发起退款
 const Form = useForm();
 
@@ -269,4 +315,8 @@ function toRefund(item: Eps.OrderInfoEntity) {
 		}
 	});
 }
+
+onMounted(async () => {
+	await fetchGoods();
+});
 </script>

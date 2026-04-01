@@ -47,20 +47,23 @@ const list = computed(() => {
 		?.filter((e) => !!e)
 		.forEach((e) => {
 			// 封面图
-			let pics = e.spec.images || [];
+			let pics = e.spec?.images || [];
 			if (isEmpty(pics)) {
-				pics = [e.goodsInfo.mainPic];
+				pics = [e.goodsInfo?.mainPic];
 			}
 			e.cover = pics[0];
 
-			const d = arr.find((a) => a.id == e.goodsInfo.id);
+			const goodsId = e.goodsInfo?.id;
+			if (!goodsId) return;
+
+			const d = arr.find((a) => a.id == goodsId);
 
 			if (d) {
 				d.children?.push(e);
 			} else {
 				arr.push({
-					id: e.goodsInfo.id!,
-					name: e.goodsInfo.title!,
+					id: goodsId,
+					name: e.goodsInfo?.title || "-",
 					children: [e]
 				});
 			}

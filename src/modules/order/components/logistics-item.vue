@@ -3,14 +3,15 @@
 		<div class="row">
 			<span>联系电话：</span>
 
-			<span>{{ scope.address.phone }}（{{ scope.address.contact }}）</span>
+			<span>{{ scope.address?.phone || "-" }}（{{ scope.address?.contact || "-" }}）</span>
 		</div>
 
 		<div class="row">
 			<span>所在地区：</span>
 
 			<span>
-				{{ scope.address.province }}{{ scope.address.city }}{{ scope.address.district }}
+				{{ scope.address?.province || "" }}{{ scope.address?.city || ""
+				}}{{ scope.address?.district || "" }}
 			</span>
 		</div>
 
@@ -18,7 +19,7 @@
 			<span>详细地址：</span>
 
 			<span>
-				{{ scope.address.address }}
+				{{ scope.address?.address || "-" }}
 			</span>
 		</div>
 
@@ -169,7 +170,8 @@ function toDeliver() {
 			submit(data, { close, done }) {
 				if (data.company == "sf") {
 					if (!data.num.includes(":")) {
-						data.num += `:${props.scope.address.phone.slice(-4)}`;
+						const phoneSuffix = props.scope.address?.phone?.slice?.(-4);
+						data.num += `:${phoneSuffix || ""}`;
 					}
 				}
 

@@ -1507,6 +1507,11 @@ declare namespace Eps {
 		orderType?: number;
 
 		/**
+		 * 商品ID
+		 */
+		goodsId?: number;
+
+		/**
 		 * 抽奖订单数据
 		 */
 		lotteryData?: json;
@@ -1530,6 +1535,11 @@ declare namespace Eps {
 		 * 头像
 		 */
 		avatarUrl?: string;
+
+		/**
+		 * 是否机器人 0-否 1-是
+		 */
+		isRobot?: number;
 
 		/**
 		 * 任意键值

@@ -22,7 +22,7 @@ const doc = computed(() => {
 
 	switch (type) {
 		case 0:
-			return `${info.title}（满 ${info.condition.fullAmount} 元减 ${info.amount} 元）`;
+			return `${info?.title || ""}（满 ${info?.condition?.fullAmount || 0} 元减 ${info?.amount || 0} 元）`;
 
 		default:
 			return "";
