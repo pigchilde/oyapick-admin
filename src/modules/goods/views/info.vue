@@ -89,6 +89,25 @@ import { ElMessage, ElMessageBox } from 'element-plus';
 
 const { service } = useCool();
 
+function calcTotalShares(price: number | string, currentPrice: number | string) {
+	const p = Number(price);
+	const cp = Number(currentPrice);
+	if (!Number.isFinite(p) || !Number.isFinite(cp) || p <= 0 || cp <= 0) {
+		return undefined;
+	}
+	const shares = cp / p;
+	if (!Number.isInteger(shares) || shares <= 0) {
+		return undefined;
+	}
+	return shares;
+}
+
+function syncTotalShares() {
+	const form = (Upsert.value as any)?.form;
+	if (!form) return;
+	form.totalShares = calcTotalShares(form.price, form.currentPrice) ?? undefined;
+}
+
 const options = reactive({
 	type: [] as Dict.Item[],
 	lotteryStatus: [
@@ -172,7 +191,7 @@ const Upsert = useUpsert({
 			label: '原价',
 			prop: 'was',
 			hook: 'number',
-
+			span: 12,
 			component: {
 				name: 'el-input-number',
 				props: {
@@ -185,7 +204,32 @@ const Upsert = useUpsert({
 		},
 		{
 			group: 'base',
-			label: '价格',
+			label: '现价',
+			prop: 'currentPrice',
+			hook: 'number',
+			span: 12,
+			component: {
+				name: 'el-input-number',
+				props: {
+					min: 0.01,
+					max: 1000000,
+					precision: 2,
+					onChange: () => {
+						syncTotalShares();
+					},
+					onInput: () => {
+						syncTotalShares();
+					},
+					'onUpdate:modelValue': () => {
+						syncTotalShares();
+					}
+				}
+			},
+			required: true
+		},
+		{
+			group: 'base',
+			label: '单价',
 			prop: 'price',
 			hook: 'number',
 			span: 12,
@@ -194,7 +238,16 @@ const Upsert = useUpsert({
 				props: {
 					min: 0.01,
 					max: 1000000,
-					precision: 2
+					precision: 2,
+					onChange: () => {
+						syncTotalShares();
+					},
+					onInput: () => {
+						syncTotalShares();
+					},
+					'onUpdate:modelValue': () => {
+						syncTotalShares();
+					}
 				}
 			},
 			required: true
@@ -203,17 +256,21 @@ const Upsert = useUpsert({
 			group: 'base',
 			label: '总份数',
 			prop: 'totalShares',
-			hook: 'number',
+			hook: {
+				bind(value, { form }) {
+					return calcTotalShares(form.price, form.currentPrice) ?? value;
+				}
+			},
 			span: 12,
 			component: {
 				name: 'el-input-number',
 				props: {
 					min: 1,
 					max: 1000000,
-					precision: 0
+					precision: 0,
+					disabled: true
 				}
-			},
-			required: true
+			}
 		},
 
 		{
@@ -288,7 +345,20 @@ const Upsert = useUpsert({
 				name: 'cl-editor-wang'
 			}
 		}
-	]
+	],
+	onOpened(data) {
+		data.totalShares = calcTotalShares(data.price, data.currentPrice) ?? data.totalShares;
+	},
+	onSubmit(data, { next, done }) {
+		const shares = calcTotalShares(data.price, data.currentPrice);
+		if (!shares) {
+			ElMessage.error('现价必须能被单价整除，且两者都要大于0');
+			done();
+			return;
+		}
+		data.totalShares = shares;
+		next(data);
+	}
 });
 
 // cl-table
@@ -309,7 +379,8 @@ const Table = useTable({
 			minWidth: 100,
 			component: { name: 'cl-image', props: { size: 50 } }
 		},
-		{ label: '价格', prop: 'price', minWidth: 100, sortable: 'custom' },
+		{ label: '单价', prop: 'price', minWidth: 100, sortable: 'custom' },
+		{ label: '现价', prop: 'currentPrice', minWidth: 100, sortable: 'custom' },
 		{ label: '总份数', prop: 'totalShares', minWidth: 100 },
 		{ label: '已售份数', prop: 'soldCount', minWidth: 100 },
 		{

@@ -998,9 +998,14 @@ declare namespace Eps {
 		pics?: json;
 
 		/**
-		 * 价格
+		 * 单价
 		 */
 		price?: number;
+
+		/**
+		 * 现价
+		 */
+		currentPrice?: number;
 
 		/**
 		 * 原价
@@ -1706,6 +1711,41 @@ declare namespace Eps {
 		 * 状态 0-停用 1-运行
 		 */
 		status?: number;
+
+		/**
+		 * 排产状态 0-未排产 1-排产中 2-排产完成 3-排产失败
+		 */
+		planningStatus?: number;
+
+		/**
+		 * 排产令牌
+		 */
+		planningToken?: string;
+
+		/**
+		 * 排产启动时间
+		 */
+		planningStartedAt?: Date;
+
+		/**
+		 * 排产完成时间
+		 */
+		plannedAt?: Date;
+
+		/**
+		 * 排产计划数
+		 */
+		plannedPlanCount?: number;
+
+		/**
+		 * 排产总份数
+		 */
+		plannedShareTotal?: number;
+
+		/**
+		 * 排产错误信息
+		 */
+		planningError?: string;
 
 		/**
 		 * 开始时间
