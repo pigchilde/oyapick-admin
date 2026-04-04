@@ -1,6 +1,6 @@
 const proxy = {
 	'/dev/': {
-		target: 'http://127.0.0.1:7076',
+		target: 'http://127.0.0.1:7077',
 		changeOrigin: true,
 		rewrite: (path: string) => path.replace(/^\/dev/, '')
 	},

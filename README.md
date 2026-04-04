@@ -1,78 +1,164 @@
-# cool-admin [vue3 - ts - vite]
+# OyaPick Admin
 
-<p align="center">
-  <a href="https://show.cool-admin.com/" target="blank"><img src="https://admin.cool-js.com/logo.png" width="200" alt="cool-admin Logo" /></a>
-</p>
+OyaPick 管理后台项目，基于 `Vue 3 + TypeScript + Vite + Element Plus + cool-admin`。
 
-<p align="center">cool-admin 一个很酷的后台权限管理系统，开源免费，模块化、插件化、极速开发 CRUD，方便快速构建迭代后台管理系统， 到<a href="https://cool-js.com" target="_blank">文档</a> 进一步了解</p>
+当前仓库用于管理端运营能力，包括商品抽奖、订单、用户、客服、内容与基础权限管理等模块。
 
-<p align="center">
-    <a href="https://github.com/cool-team-official/cool-admin-vue/blob/master/LICENSE" target="_blank"><img src="https://img.shields.io/badge/license-MIT-green?style=flat-square" alt="GitHub license" />
-    <a href=""><img src="https://img.shields.io/github/package-json/v/cool-team-official/cool-admin-vue?style=flat-square" alt="GitHub tag"></a>
-    <img src="https://img.shields.io/github/last-commit/cool-team-official/cool-admin-vue?style=flat-square" alt="GitHub tag"></a>
-</p>
+## 项目状态
 
-## 特性
+- 前端框架：`cool-admin-vue 8.x` 二次开发
+- 应用名：`OyaPick`（见 `.env`）
+- 开发端口：`9000`
+- 构建基础路径：`/manage/`
+- 默认开发代理：`/dev -> http://127.0.0.1:7077`
 
-Ai时代，很多老旧的框架已经无法满足现代化的开发需求，Cool-Admin开发了一系列的功能，让开发变得更简单、更快速、更高效。
+## 关联仓库
 
-- **Ai编码**：通过微调大模型学习框架特有写法，实现简单功能从Api接口到前端页面的一键生成
-- **流程编排**：通过拖拽编排方式，即可实现类似像智能客服这样的功能
-- **模块化**：代码是模块化的，清晰明了，方便维护
-- **插件化**：插件化的设计，可以通过安装插件的方式扩展如：支付、短信、邮件等功能
+- 管理后台前端（本仓库）：`oyapick-admin`
+- 后端服务：`../oyapick-server`
+- C 端站点：`../oyapick-site`
 
-![](https://cool-show.oss-cn-shanghai.aliyuncs.com/admin/flow.png)
+## 技术栈
 
-## 地址
+- Vue 3.5
+- TypeScript 5.5
+- Vite 5
+- Element Plus 2
+- Pinia
+- Vue Router 4
+- Vue I18n
+- @cool-vue/crud
+- ECharts / WangEditor / xlsx
 
-- [📌 v7 版本](https://github.com/cool-team-official/cool-admin-vue/tree/7.x)
+## 功能模块（src/modules）
 
-- [🌐 码云仓库](https://gitee.com/cool-team-official/cool-admin-vue)
+- `base`：登录、权限、菜单、用户中心、系统基础页
+- `goods`：商品管理（抽奖商品、开奖、提货码核验）
+- `order`：订单与退款管理
+- `market`：营销能力（如优惠券）
+- `user`：用户管理
+- `app`：App 反馈、版本、商品等
+- `space`：文件空间
+- `dict`：字典管理
+- `task`：任务管理
+- `recycle`：回收站
+- `cs`：客服消息能力
+- `robot`：机器人任务
+- `info`：规则、Banner 等内容配置
+- `helper` / `demo`：辅助与演示模块
 
-## 视频教程
+> 具体页面权限与菜单展示由后端返回菜单/权限控制。
 
-[官方 B 站视频教程](https://www.bilibili.com/video/BV1j1421R7aB)
+## 快速开始
 
-## 演示
+### 1) 环境要求
 
-[https://show.cool-admin.com](https://show.cool-admin.com)
+- Node.js：建议 `>= 18`
+- 包管理器：推荐 `pnpm`
 
-账户：admin，密码：123456
+### 2) 安装依赖
 
-<img src="https://cool-show.oss-cn-shanghai.aliyuncs.com/admin/home-mini.png" alt="Admin Home" ></a>
-
-## 项目后端
-
-[https://github.com/cool-team-official/cool-admin-midway](https://github.com/cool-team-official/cool-admin-midway)
-
-或
-
-[https://gitee.com/cool-team-official/cool-admin-midway](https://gitee.com/cool-team-official/cool-admin-midway)
-
-或
-
-[https://gitcode.com/cool_team/cool-admin-midway](https://gitcode.com/cool_team/cool-admin-midway)
-
-## 微信群
-
-<img width="260" src="https://cool-show.oss-cn-shanghai.aliyuncs.com/admin/wechat.jpeg" alt="Admin Wechat"></a>
-
-## 安装项目依赖
-
-推荐使用 `pnpm`：
-
-```shell
-pnpm i
+```bash
+pnpm install
 ```
 
-## 运行应用程序
+### 3) 启动开发环境
 
-安装过程完成后，运行以下命令启动服务。您可以在浏览器中预览网站 [http://localhost:9000](http://localhost:9000)
-
-```shell
+```bash
 pnpm dev
 ```
 
-### 低价服务器
+默认访问（受 `base=/manage/` 影响）：
 
-[阿里云、腾讯云、华为云低价云服务器，不限新老](https://cool-js.com/service/cloud)
+- `http://localhost:9000/manage/`
+
+## 环境与代理配置
+
+### `.env`
+
+```env
+VITE_NAME=OyaPick
+```
+
+### 代理（`src/config/proxy.ts`）
+
+- `/dev/` -> `http://127.0.0.1:7077`
+- `/prod/` -> `https://show.cool-admin.com`
+
+默认 `current=dev`，即开发时请求前缀为 `/dev`。
+
+如需切换代理环境，可在启动前设置环境变量 `VITE_PROXY_ENV`。
+
+示例：
+
+```bash
+VITE_PROXY_ENV=prod pnpm dev
+```
+
+## 可用脚本
+
+```bash
+# 本地开发
+pnpm dev
+
+# 生产构建
+pnpm build
+
+# 静态构建（hash 路由）
+pnpm build-static
+
+# 演示模式构建
+pnpm build-demo
+
+# 本地预览构建产物
+pnpm preview
+
+# 类型检查
+pnpm type-check
+
+# ESLint 自动修复
+pnpm lint
+
+# 格式化 src/
+pnpm format
+```
+
+## 目录结构
+
+```text
+oyapick-admin/
+├── src/
+│   ├── config/          # 环境、代理、全局配置
+│   ├── cool/            # cool-admin 核心封装（bootstrap、service、router）
+│   ├── modules/         # 业务模块
+│   ├── plugins/         # 插件模块（crud、upload、theme、i18n 等）
+│   └── main.ts          # 应用入口
+├── public/              # 静态资源
+├── build/               # 构建辅助文件
+├── packages/            # 本地包（vite-plugin、crud）
+├── vite.config.ts
+└── README.md
+```
+
+## 部署说明
+
+### 前端静态部署
+
+1. 执行 `pnpm build`
+2. 将 `dist/` 部署到静态服务器
+3. 保证服务器将 `/manage/*` 路由回退到 `index.html`
+
+### Nginx / Docker
+
+仓库包含：
+
+- `nginx.conf`
+- `Dockerfile`
+
+`Dockerfile` 会构建前端并将产物放入 Nginx 容器 `/app`，同时按 `nginx.conf` 转发 `/api/` 与 `/socket` 到后端服务。
+
+## 说明
+
+- 路由模式默认是 `history`；`build-static` 模式下为 `hash`。
+- 国际化默认语言为 `zh-cn`，支持 `zh-cn / zh-tw / en`。
+- 商品模块接口文档见：`src/modules/goods/API.md`。
