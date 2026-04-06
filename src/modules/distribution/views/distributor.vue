@@ -109,7 +109,7 @@ function onPageChange(page: number) {
 }
 
 async function changeRate(row: DistributorRow) {
-	const value = await ElMessageBox.prompt("请输入个人佣金比例(bp, 0-10000)", "调整比例", {
+	const value = await ElMessageBox.prompt("请输入个人佣金比例(bp, 0-10000, 200即为2%)", "调整比例", {
 		inputValue: String(row.commissionRateBp || 200)
 	});
 	const commissionRateBp = Number(value.value || 0);
