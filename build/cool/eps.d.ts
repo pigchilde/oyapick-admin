@@ -1324,6 +1324,11 @@ declare namespace Eps {
 
 	interface DistributionCommission {
 		/**
+		 * releaseFrozen
+		 */
+		releaseFrozen(data?: any): Promise<any>;
+
+		/**
 		 * page
 		 */
 		page(data?: any): Promise<{
@@ -1335,12 +1340,12 @@ declare namespace Eps {
 		/**
 		 * 权限标识
 		 */
-		permission: { page: string };
+		permission: { releaseFrozen: string; page: string };
 
 		/**
 		 * 权限状态
 		 */
-		_permission: { page: boolean };
+		_permission: { releaseFrozen: boolean; page: boolean };
 
 		request: Service["request"];
 	}
