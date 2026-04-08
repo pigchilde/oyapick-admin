@@ -1,131 +1,108 @@
 <template>
-	<div class="dist-page">
-		<el-card shadow="never">
-			<template #header>佣金订单</template>
-			<div class="toolbar">
-				<el-input-number v-model="query.distributorUserId" :min="0" placeholder="分销商ID" />
-				<el-input-number v-model="query.buyerUserId" :min="0" placeholder="下单用户ID" />
-				<el-input-number v-model="query.orderId" :min="0" placeholder="订单ID" />
-				<el-select v-model="query.status" clearable placeholder="状态" style="width: 120px">
-					<el-option label="预计" :value="0" />
-					<el-option label="冻结" :value="1" />
-					<el-option label="可提现" :value="2" />
-					<el-option label="取消" :value="3" />
-					<el-option label="反冲" :value="4" />
-				</el-select>
-				<el-button type="primary" @click="search">查询</el-button>
-			</div>
+	<cl-crud ref="Crud">
+		<cl-row>
+			<!-- 刷新按钮 -->
+			<cl-refresh-btn />
 
-			<el-table :data="list" border stripe>
-				<el-table-column prop="id" label="ID" width="90" />
-				<el-table-column prop="orderId" label="订单ID" width="100" />
-				<el-table-column prop="distributorUserId" label="分销商ID" width="110" />
-				<el-table-column prop="buyerUserId" label="下单用户ID" width="110" />
-				<el-table-column prop="baseAmount" label="实付金额" width="110" />
-				<el-table-column prop="rateBp" label="比例(bp)" width="100" />
-				<el-table-column prop="commissionAmount" label="佣金" width="100" />
-				<el-table-column prop="status" label="状态" width="100">
-					<template #default="{ row }">{{ statusText(row.status) }}</template>
-				</el-table-column>
-				<el-table-column prop="settleAt" label="结算时间" width="180" />
-				<el-table-column prop="createTime" label="创建时间" width="180" />
-			</el-table>
+			<cl-filter label="状态">
+				<cl-select :options="options.status" prop="status" :width="120" />
+			</cl-filter>
 
-			<div class="pager">
-				<el-pagination
-					background
-					layout="total, prev, pager, next"
-					:total="total"
-					:page-size="query.size"
-					:current-page="query.page"
-					@current-change="onPageChange"
-				/>
-			</div>
-		</el-card>
-	</div>
+			<cl-flex1 />
+
+			<!-- 关键字搜索 -->
+			<cl-search-key placeholder="搜索分销商ID/下单用户ID/订单ID" />
+		</cl-row>
+
+		<cl-row>
+			<!-- 数据表格 -->
+			<cl-table ref="Table" />
+		</cl-row>
+
+		<cl-row>
+			<cl-flex1 />
+			<!-- 分页控件 -->
+			<cl-pagination />
+		</cl-row>
+	</cl-crud>
 </template>
 
-<script lang="ts" setup>
-import { onMounted, reactive, ref } from "vue";
-import { useCool } from "/@/cool";
+<script lang="ts" name="distribution-commission" setup>
+import { useCrud, useTable } from '@cool-vue/crud';
+import { useCool } from '/@/cool';
+import { reactive } from 'vue';
+import { ElMessage, ElMessageBox } from 'element-plus';
 
 const { service } = useCool();
 
-interface CommissionRow {
-	id: number;
-	orderId: number;
-	distributorUserId: number;
-	buyerUserId: number;
-	baseAmount: number;
-	rateBp: number;
-	commissionAmount: number;
-	status: number;
-	settleAt?: string;
-	createTime?: string;
-}
-
-interface CommissionQuery {
-	page: number;
-	size: number;
-	status?: number;
-	distributorUserId?: number;
-	buyerUserId?: number;
-	orderId?: number;
-}
-
-const list = ref<CommissionRow[]>([]);
-const total = ref(0);
-const query = reactive<CommissionQuery>({
-	page: 1,
-	size: 20,
-	status: undefined,
-	distributorUserId: undefined,
-	buyerUserId: undefined,
-	orderId: undefined
+const options = reactive({
+	status: [
+		{ label: '预计', value: 0 },
+		{ label: '冻结', value: 1, type: 'warning' },
+		{ label: '可提现', value: 2, type: 'success' },
+		{ label: '取消', value: 3, type: 'info' },
+		{ label: '反冲', value: 4, type: 'danger' }
+	]
 });
 
-const statusText = (status: number) => {
-	return ({ 0: "预计", 1: "冻结", 2: "可提现", 3: "取消", 4: "反冲" } as Record<number, string>)[
-		Number(status)
-	];
-};
+// cl-table
+const Table = useTable({
+	columns: [
+		{ type: 'selection' },
+		{ label: 'ID', prop: 'id', minWidth: 90 },
+		{ label: '订单ID', prop: 'orderId', minWidth: 100 },
+		{ label: '分销商ID', prop: 'distributorUserId', minWidth: 110 },
+		{ label: '下单用户ID', prop: 'buyerUserId', minWidth: 110 },
+		{ label: '实付金额', prop: 'baseAmount', minWidth: 110, sortable: 'custom' },
+		{ label: '比例(bp)', prop: 'rateBp', minWidth: 100 },
+		{ label: '佣金', prop: 'commissionAmount', minWidth: 100, sortable: 'custom' },
+		{
+			label: '状态',
+			prop: 'status',
+			minWidth: 100,
+			dict: options.status
+		},
+		{ label: '结算时间', prop: 'settleAt', minWidth: 160, sortable: 'custom' },
+		{ label: '创建时间', prop: 'createTime', minWidth: 160, sortable: 'desc' },
+		{
+			type: 'op',
+			width: 120,
+			buttons: [
+				{
+					label: '释放冻结',
+					type: 'warning',
+					onClick({ scope }) {
+						handleReleaseFrozen(scope.row);
+					},
+					show({ scope }) {
+						return Number(scope.row.status) === 1;
+					}
+				}
+			]
+		}
+	]
+});
 
-async function load() {
-	const res = await service.request({
-		url: "/admin/distribution/commission/page",
-		method: "POST",
-		data: query
-	});
-	list.value = res?.list || [];
-	total.value = Number(res?.pagination?.total || 0);
+// cl-crud
+const Crud = useCrud(
+	{
+		service: service.distribution.commission
+	},
+	app => {
+		app.refresh();
+	}
+);
+
+async function handleReleaseFrozen(row: any) {
+	try {
+		await ElMessageBox.confirm('确定要手动释放该冻结佣金吗？', '释放确认', {
+			type: 'warning'
+		});
+		await service.distribution.commission.releaseFrozen({ id: row.id });
+		ElMessage.success('释放成功');
+		Crud.value?.refresh();
+	} catch {
+		// 取消操作
+	}
 }
-
-async function search() {
-	query.page = 1;
-	await load();
-}
-
-function onPageChange(page: number) {
-	query.page = page;
-	load();
-}
-
-onMounted(load);
 </script>
-
-<style scoped>
-.dist-page {
-	padding: 10px;
-}
-.toolbar {
-	display: flex;
-	align-items: center;
-	gap: 10px;
-	margin-bottom: 14px;
-}
-.pager {
-	display: flex;
-	justify-content: flex-end;
-	margin-top: 14px;
-}
-</style>

@@ -1,190 +1,171 @@
 <template>
-	<div class="dist-page">
-		<el-card shadow="never">
-			<template #header>分销商管理</template>
-			<div class="toolbar">
-				<el-input v-model="query.keyWord" placeholder="昵称/手机号/邀请码" clearable style="width: 260px" />
-				<el-select v-model="query.status" clearable placeholder="状态" style="width: 120px">
-					<el-option label="正常" :value="1" />
-					<el-option label="冻结" :value="0" />
-				</el-select>
-				<el-button type="primary" @click="search">查询</el-button>
-			</div>
+	<cl-crud ref="Crud">
+		<cl-row>
+			<!-- 刷新按钮 -->
+			<cl-refresh-btn />
 
-			<el-table :data="list" border stripe>
-				<el-table-column prop="id" label="用户ID" width="90" />
-				<el-table-column prop="nickName" label="昵称" min-width="160" />
-				<el-table-column prop="phone" label="手机号" width="140" />
-				<el-table-column prop="inviteCode" label="邀请码" width="120" />
-				<el-table-column prop="inviterId" label="上级ID" width="100" />
-				<el-table-column prop="commissionRateBp" label="个人比例(bp)" width="130" />
-				<el-table-column prop="distributorStatus" label="状态" width="100">
-					<template #default="{ row }">
-						<el-tag :type="Number(row.distributorStatus) === 1 ? 'success' : 'danger'">
-							{{ Number(row.distributorStatus) === 1 ? "正常" : "冻结" }}
-						</el-tag>
-					</template>
-				</el-table-column>
-				<el-table-column label="操作" width="320" fixed="right">
-					<template #default="{ row }">
-						<el-button link type="primary" @click="changeRate(row)">改比例</el-button>
-						<el-button
-							link
-							:type="Number(row.distributorStatus) === 1 ? 'danger' : 'success'"
-							@click="toggleFreeze(row)"
-						>
-							{{ Number(row.distributorStatus) === 1 ? "冻结" : "解冻" }}
-						</el-button>
-						<el-button link type="warning" @click="changeBinding(row)">改绑</el-button>
-						<el-button link type="info" @click="unbind(row)">解绑</el-button>
-					</template>
-				</el-table-column>
-			</el-table>
+			<cl-filter label="状态">
+				<cl-select :options="options.status" prop="status" :width="140" />
+			</cl-filter>
 
-			<div class="pager">
-				<el-pagination
-					background
-					layout="total, prev, pager, next"
-					:total="total"
-					:page-size="query.size"
-					:current-page="query.page"
-					@current-change="onPageChange"
-				/>
-			</div>
-		</el-card>
-	</div>
+			<cl-flex1 />
+
+			<!-- 关键字搜索 -->
+			<cl-search-key placeholder="搜索昵称/手机号/邀请码" />
+		</cl-row>
+
+		<cl-row>
+			<!-- 数据表格 -->
+			<cl-table ref="Table" />
+		</cl-row>
+
+		<cl-row>
+			<cl-flex1 />
+			<!-- 分页控件 -->
+			<cl-pagination />
+		</cl-row>
+	</cl-crud>
 </template>
 
-<script lang="ts" setup>
-import { onMounted, reactive, ref } from "vue";
-import { ElMessage, ElMessageBox } from "element-plus";
-import { useCool } from "/@/cool";
+<script lang="ts" name="distribution-distributor" setup>
+import { useCrud, useTable } from '@cool-vue/crud';
+import { useCool } from '/@/cool';
+import { reactive } from 'vue';
+import { ElMessage, ElMessageBox } from 'element-plus';
 
 const { service } = useCool();
 
-interface DistributorRow {
-	id: number;
-	nickName?: string;
-	phone?: string;
-	inviteCode?: string;
-	inviterId?: number;
-	commissionRateBp?: number;
-	distributorStatus: number;
-}
-
-interface DistributorQuery {
-	page: number;
-	size: number;
-	keyWord: string;
-	status?: number;
-}
-
-const list = ref<DistributorRow[]>([]);
-const total = ref(0);
-const query = reactive<DistributorQuery>({
-	page: 1,
-	size: 20,
-	keyWord: "",
-	status: undefined
+const options = reactive({
+	status: [
+		{ label: '正常', value: 1, type: 'success' },
+		{ label: '冻结', value: 0, type: 'danger' }
+	]
 });
 
-async function load() {
-	const res = await service.request({
-		url: "/admin/distribution/distributor/page",
-		method: "POST",
-		data: query
-	});
-	list.value = res?.list || [];
-	total.value = Number(res?.pagination?.total || 0);
-}
+// cl-table
+const Table = useTable({
+	columns: [
+		{ type: 'selection' },
+		{ label: '用户ID', prop: 'id', minWidth: 90 },
+		{ label: '昵称', prop: 'nickName', minWidth: 160 },
+		{ label: '手机号', prop: 'phone', minWidth: 140 },
+		{ label: '邀请码', prop: 'inviteCode', minWidth: 120 },
+		{ label: '上级ID', prop: 'inviterId', minWidth: 100 },
+		{ label: '个人比例(bp)', prop: 'commissionRateBp', minWidth: 130 },
+		{
+			label: '状态',
+			prop: 'distributorStatus',
+			minWidth: 100,
+			dict: options.status
+		},
+		{
+			label: '创建时间',
+			prop: 'createTime',
+			minWidth: 160,
+			sortable: 'desc'
+		},
+		{
+			type: 'op',
+			width: 320,
+			buttons: [
+				{
+					label: '改比例',
+					type: 'primary',
+					onClick({ scope }) {
+						handleUpdateRate(scope.row);
+					}
+				},
+				{
+					label: '冻结',
+					type: 'danger',
+					onClick({ scope }) {
+						handleToggleFreeze(scope.row);
+					},
+					show({ scope }) {
+						return Number(scope.row.distributorStatus) === 1;
+					}
+				},
+				{
+					label: '解冻',
+					type: 'success',
+					onClick({ scope }) {
+						handleToggleFreeze(scope.row);
+					},
+					show({ scope }) {
+						return Number(scope.row.distributorStatus) !== 1;
+					}
+				},
+				{
+					label: '改绑',
+					type: 'warning',
+					onClick({ scope }) {
+						handleChangeBinding(scope.row);
+					}
+				},
+				{
+					label: '解绑',
+					type: 'info',
+					onClick({ scope }) {
+						handleUnbind(scope.row);
+					}
+				}
+			]
+		}
+	]
+});
 
-async function search() {
-	query.page = 1;
-	await load();
-}
+// cl-crud
+const Crud = useCrud(
+	{
+		service: service.distribution.distributor
+	},
+	app => {
+		app.refresh();
+	}
+);
 
-function onPageChange(page: number) {
-	query.page = page;
-	load();
-}
-
-async function changeRate(row: DistributorRow) {
-	const value = await ElMessageBox.prompt("请输入个人佣金比例(bp, 0-10000, 200即为2%)", "调整比例", {
+async function handleUpdateRate(row: any) {
+	const value = await ElMessageBox.prompt('请输入个人佣金比例(bp, 0-10000, 200即为2%)', '调整比例', {
 		inputValue: String(row.commissionRateBp || 200)
 	});
 	const commissionRateBp = Number(value.value || 0);
-	await service.request({
-		url: "/admin/distribution/distributor/updateRate",
-		method: "POST",
-		data: {
-			userId: row.id,
-			commissionRateBp
-		}
+	await service.distribution.distributor.updateRate({
+		userId: row.id,
+		commissionRateBp
 	});
-	ElMessage.success("更新成功");
-	await load();
+	ElMessage.success('更新成功');
+	Crud.value?.refresh();
 }
 
-async function toggleFreeze(row: DistributorRow) {
-	await service.request({
-		url: "/admin/distribution/distributor/freeze",
-		method: "POST",
-		data: {
-			userId: row.id,
-			status: Number(row.distributorStatus) === 1 ? 0 : 1
-		}
+async function handleToggleFreeze(row: any) {
+	await service.distribution.distributor.freeze({
+		userId: row.id,
+		status: Number(row.distributorStatus) === 1 ? 0 : 1
 	});
-	ElMessage.success("操作成功");
-	await load();
+	ElMessage.success('操作成功');
+	Crud.value?.refresh();
 }
 
-async function changeBinding(row: DistributorRow) {
-	const value = await ElMessageBox.prompt("请输入新的上级用户ID", "调整绑定关系");
+async function handleChangeBinding(row: any) {
+	const value = await ElMessageBox.prompt('请输入新的上级用户ID', '调整绑定关系');
 	const newInviterId = Number(value.value || 0);
-	await service.request({
-		url: "/admin/distribution/distributor/changeBinding",
-		method: "POST",
-		data: {
-			userId: row.id,
-			newInviterId,
-			reason: "后台人工改绑",
-			ticketNo: `T${Date.now()}`
-		}
+	await service.distribution.distributor.changeBinding({
+		userId: row.id,
+		newInviterId,
+		reason: '后台人工改绑',
+		ticketNo: `T${Date.now()}`
 	});
-	ElMessage.success("改绑成功");
-	await load();
+	ElMessage.success('改绑成功');
+	Crud.value?.refresh();
 }
 
-async function unbind(row: DistributorRow) {
-	await service.request({
-		url: "/admin/distribution/distributor/unbind",
-		method: "POST",
-		data: {
-			userId: row.id,
-			reason: "后台人工解绑",
-			ticketNo: `T${Date.now()}`
-		}
+async function handleUnbind(row: any) {
+	await service.distribution.distributor.unbind({
+		userId: row.id,
+		reason: '后台人工解绑',
+		ticketNo: `T${Date.now()}`
 	});
-	ElMessage.success("解绑成功");
-	await load();
+	ElMessage.success('解绑成功');
+	Crud.value?.refresh();
 }
-
-onMounted(load);
 </script>
-
-<style scoped>
-.dist-page {
-	padding: 10px;
-}
-.toolbar {
-	display: flex;
-	align-items: center;
-	gap: 10px;
-	margin-bottom: 14px;
-}
-.pager {
-	display: flex;
-	justify-content: flex-end;
-	margin-top: 14px;
-}
-</style>
