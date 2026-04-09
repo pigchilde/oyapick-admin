@@ -26,5 +26,6 @@ data/*
 **/pnpm-lock.yaml
 !/pnpm-lock.yaml
 public/uploads/*
-./claude
+.claude
+.claude/*
 .env
