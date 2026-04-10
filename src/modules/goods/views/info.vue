@@ -108,6 +108,22 @@ function syncTotalShares() {
 	form.totalShares = calcTotalShares(form.price, form.currentPrice) ?? undefined;
 }
 
+function isFutureDateTime(value?: string | Date) {
+	if (!value) {
+		return false;
+	}
+	const date = value instanceof Date ? value : new Date(String(value).replace(' ', 'T'));
+	return Number.isFinite(date.getTime()) && date.getTime() > Date.now();
+}
+
+const showLotteryStatusField = ref(false);
+
+function syncLotteryStatusField(form?: any) {
+	const data = form || (Upsert.value as any)?.form;
+	showLotteryStatusField.value =
+		Upsert.value?.mode === 'update' && Number(data?.lotteryStatus) === 3 && isFutureDateTime(data?.endTime);
+}
+
 const options = reactive({
 	type: [] as Dict.Item[],
 	lotteryStatus: [
@@ -300,10 +316,36 @@ const Upsert = useUpsert({
 					type: 'datetime',
 					placeholder: '请选择结束时间',
 					format: 'YYYY-MM-DD HH:mm:ss',
-					valueFormat: 'YYYY-MM-DD HH:mm:ss'
+					valueFormat: 'YYYY-MM-DD HH:mm:ss',
+					onChange: (value: string) => {
+						const form = (Upsert.value as any)?.form;
+						if (form) form.endTime = value;
+						syncLotteryStatusField(form);
+					},
+					'onUpdate:modelValue': (value: string) => {
+						const form = (Upsert.value as any)?.form;
+						if (form) form.endTime = value;
+						syncLotteryStatusField(form);
+					}
 				}
 			},
 			required: true
+		},
+		() => {
+			return {
+				group: 'base',
+				label: '抽奖状态',
+				prop: 'lotteryStatus',
+				span: 12,
+				hidden: !showLotteryStatusField.value,
+				component: {
+					name: 'cl-select',
+					props: {
+						options: options.lotteryStatus.filter(item => [1, 3].includes(Number(item.value))),
+						clearable: false
+					}
+				}
+			};
 		},
 		{
 			group: 'base',
@@ -348,11 +390,20 @@ const Upsert = useUpsert({
 	],
 	onOpened(data) {
 		data.totalShares = calcTotalShares(data.price, data.currentPrice) ?? data.totalShares;
+		syncLotteryStatusField(data);
 	},
 	onSubmit(data, { next, done }) {
 		const shares = calcTotalShares(data.price, data.currentPrice);
 		if (!shares) {
 			ElMessage.error('现价必须能被单价整除，且两者都要大于0');
+			done();
+			return;
+		}
+		if (!showLotteryStatusField.value) {
+			delete data.lotteryStatus;
+		}
+		if (Number(data.lotteryStatus) === 1 && !isFutureDateTime(data.endTime)) {
+			ElMessage.error('恢复进行中时，结束时间必须晚于当前时间');
 			done();
 			return;
 		}
