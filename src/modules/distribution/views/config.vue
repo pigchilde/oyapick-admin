@@ -29,9 +29,6 @@
 				<el-form-item label="手续费值">
 					<el-input-number v-model="form.withdrawFeeValue" :min="0" :precision="2" />
 				</el-form-item>
-				<el-form-item label="结算冻结分钟">
-					<el-input-number v-model="form.settlementFreezeMinutes" :min="0" :max="43200" />
-				</el-form-item>
 				<el-form-item label="分销协议">
 					<el-input v-model="form.agreementContent" type="textarea" :rows="8" />
 				</el-form-item>
@@ -54,7 +51,6 @@ interface DistributionConfigForm {
 	minWithdrawAmount: number;
 	withdrawFeeType: number;
 	withdrawFeeValue: number;
-	settlementFreezeMinutes: number;
 	agreementContent: string;
 }
 
@@ -65,7 +61,6 @@ const form = reactive<DistributionConfigForm>({
 	minWithdrawAmount: 100,
 	withdrawFeeType: 0,
 	withdrawFeeValue: 0,
-	settlementFreezeMinutes: 0,
 	agreementContent: ''
 });
 

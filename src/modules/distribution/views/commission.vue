@@ -31,17 +31,13 @@
 import { useCrud, useTable } from '@cool-vue/crud';
 import { useCool } from '/@/cool';
 import { reactive } from 'vue';
-import { ElMessage, ElMessageBox } from 'element-plus';
 
 const { service } = useCool();
 
 const options = reactive({
 	status: [
-		{ label: '预计', value: 0 },
-		{ label: '冻结', value: 1, type: 'warning' },
-		{ label: '可提现', value: 2, type: 'success' },
-		{ label: '取消', value: 3, type: 'info' },
-		{ label: '反冲', value: 4, type: 'danger' }
+		{ label: '可提现', value: 0, type: 'success' },
+		{ label: '反冲', value: 1, type: 'danger' }
 	]
 });
 
@@ -62,24 +58,8 @@ const Table = useTable({
 			minWidth: 100,
 			dict: options.status
 		},
-		{ label: '结算时间', prop: 'settleAt', minWidth: 160, sortable: 'custom' },
+		{ label: '到账时间', prop: 'creditedAt', minWidth: 160, sortable: 'custom' },
 		{ label: '创建时间', prop: 'createTime', minWidth: 160, sortable: 'desc' },
-		{
-			type: 'op',
-			width: 120,
-			buttons: [
-				{
-					label: '释放冻结',
-					type: 'warning',
-					onClick({ scope }) {
-						handleReleaseFrozen(scope.row);
-					},
-					show({ scope }) {
-						return Number(scope.row.status) === 1;
-					}
-				}
-			]
-		}
 	]
 });
 
@@ -92,17 +72,4 @@ const Crud = useCrud(
 		app.refresh();
 	}
 );
-
-async function handleReleaseFrozen(row: any) {
-	try {
-		await ElMessageBox.confirm('确定要手动释放该冻结佣金吗？', '释放确认', {
-			type: 'warning'
-		});
-		await service.distribution.commission.releaseFrozen({ id: row.id });
-		ElMessage.success('释放成功');
-		Crud.value?.refresh();
-	} catch {
-		// 取消操作
-	}
-}
 </script>

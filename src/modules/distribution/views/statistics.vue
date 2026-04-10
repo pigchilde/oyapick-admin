@@ -20,9 +20,9 @@
 				</el-col>
 				<el-col :span="8">
 					<el-card shadow="hover">
-						<div style="color: #666; font-size: 13px">未结算佣金</div>
+						<div style="color: #666; font-size: 13px">当前可提现佣金池</div>
 						<div style="font-size: 26px; font-weight: 700; margin-top: 10px">
-							{{ overview.unsettledCommission?.toFixed?.(2) || '0.00' }}
+							{{ overview.wallet?.availableAmount?.toFixed?.(2) || '0.00' }}
 						</div>
 					</el-card>
 				</el-col>
@@ -96,12 +96,14 @@ import { ElMessage } from 'element-plus';
 const { service } = useCool();
 
 interface WalletOverview {
+	availableAmount?: number;
 	withdrawnAmount?: number;
 }
 
 interface StatisticsOverview {
 	totalCommission?: number;
-	unsettledCommission?: number;
+	availableCommission?: number;
+	reversedCommission?: number;
 	wallet?: WalletOverview;
 }
 
@@ -147,11 +149,13 @@ async function loadRanking() {
 }
 
 async function exportData(type: 'commission' | 'withdraw' | 'ledger') {
-	const payload: Record<string, any> = {};
-	if (exportRange.value?.length === 2) {
-		payload.startTime = exportRange.value[0];
-		payload.endTime = exportRange.value[1];
+	if (exportRange.value?.length !== 2) {
+		ElMessage.error('请先选择导出时间范围');
+		return;
 	}
+	const payload: Record<string, any> = {};
+	payload.startTime = exportRange.value[0];
+	payload.endTime = exportRange.value[1];
 	const file = await service.distribution.statistics[type](payload);
 	const blob = file instanceof Blob ? file : new Blob([file]);
 	const link = document.createElement('a');

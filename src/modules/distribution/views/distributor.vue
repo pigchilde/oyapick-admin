@@ -125,47 +125,82 @@ const Crud = useCrud(
 );
 
 async function handleUpdateRate(row: any) {
-	const value = await ElMessageBox.prompt('请输入个人佣金比例(bp, 0-10000, 200即为2%)', '调整比例', {
-		inputValue: String(row.commissionRateBp || 200)
-	});
-	const commissionRateBp = Number(value.value || 0);
-	await service.distribution.distributor.updateRate({
-		userId: row.id,
-		commissionRateBp
-	});
-	ElMessage.success('更新成功');
-	Crud.value?.refresh();
+	try {
+		const value = await ElMessageBox.prompt('请输入个人佣金比例(bp, 0-10000, 200即为2%)', '调整比例', {
+			inputValue: String(row.commissionRateBp || 200)
+		});
+		const commissionRateBp = Number(value.value || 0);
+		await service.distribution.distributor.updateRate({
+			userId: row.id,
+			commissionRateBp
+		});
+		ElMessage.success('更新成功');
+		Crud.value?.refresh();
+	} catch (err: any) {
+		if (err !== 'cancel' && err !== 'close') {
+			ElMessage.error(err?.message || '更新失败');
+		}
+	}
 }
 
 async function handleToggleFreeze(row: any) {
-	await service.distribution.distributor.freeze({
-		userId: row.id,
-		status: Number(row.distributorStatus) === 1 ? 0 : 1
-	});
-	ElMessage.success('操作成功');
-	Crud.value?.refresh();
+	try {
+		const nextStatus = Number(row.distributorStatus) === 1 ? 0 : 1;
+		await ElMessageBox.confirm(
+			nextStatus === 0 ? '确定要冻结该分销商吗？' : '确定要解冻该分销商吗？',
+			nextStatus === 0 ? '冻结确认' : '解冻确认',
+			{
+				type: 'warning'
+			}
+		);
+		await service.distribution.distributor.freeze({
+			userId: row.id,
+			status: nextStatus
+		});
+		ElMessage.success('操作成功');
+		Crud.value?.refresh();
+	} catch (err: any) {
+		if (err !== 'cancel' && err !== 'close') {
+			ElMessage.error(err?.message || '操作失败');
+		}
+	}
 }
 
 async function handleChangeBinding(row: any) {
-	const value = await ElMessageBox.prompt('请输入新的上级用户ID', '调整绑定关系');
-	const newInviterId = Number(value.value || 0);
-	await service.distribution.distributor.changeBinding({
-		userId: row.id,
-		newInviterId,
-		reason: '后台人工改绑',
-		ticketNo: `T${Date.now()}`
-	});
-	ElMessage.success('改绑成功');
-	Crud.value?.refresh();
+	try {
+		const value = await ElMessageBox.prompt('请输入新的上级用户ID', '调整绑定关系');
+		const newInviterId = Number(value.value || 0);
+		await service.distribution.distributor.changeBinding({
+			userId: row.id,
+			newInviterId,
+			reason: '后台人工改绑',
+			ticketNo: `T${Date.now()}`
+		});
+		ElMessage.success('改绑成功');
+		Crud.value?.refresh();
+	} catch (err: any) {
+		if (err !== 'cancel' && err !== 'close') {
+			ElMessage.error(err?.message || '改绑失败');
+		}
+	}
 }
 
 async function handleUnbind(row: any) {
-	await service.distribution.distributor.unbind({
-		userId: row.id,
-		reason: '后台人工解绑',
-		ticketNo: `T${Date.now()}`
-	});
-	ElMessage.success('解绑成功');
-	Crud.value?.refresh();
+	try {
+		await ElMessageBox.confirm('确定要解绑该分销商的邀请关系吗？', '解绑确认', {
+			type: 'warning'
+		});
+		await service.distribution.distributor.unbind({
+			userId: row.id,
+			reason: '后台人工解绑',
+			ticketNo: `T${Date.now()}`
+		});
+		ElMessage.success('解绑成功');
+		Crud.value?.refresh();
+	} catch (err: any) {
+		if (err !== 'cancel' && err !== 'close') {
+			ElMessage.error(err?.message || '解绑失败');
+		}
+	}
 }
 </script>
