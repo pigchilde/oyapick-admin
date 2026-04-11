@@ -14,3 +14,12 @@ export const PayType = [
 	{ label: "Opay", value: 1, color: "#2aae67" },
 	{ label: "其他", value: 2, color: "#1678FF" }
 ];
+
+export const LotteryPickupStatus = [
+	{ label: "待支付", value: "pending_payment", type: "info" },
+	{ label: "进行中", value: "ongoing", type: "warning" },
+	{ label: "已中奖待领取", value: "won_unclaimed", type: "success" },
+	{ label: "已核销", value: "won_claimed", type: "primary" },
+	{ label: "未中奖", value: "lost" },
+	{ label: "已取消", value: "cancelled", type: "danger" }
+];

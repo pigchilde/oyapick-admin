@@ -53,7 +53,7 @@
 import { useCrud, useTable } from "@cool-vue/crud";
 import { useCool } from "/@/cool";
 import { onMounted, reactive, ref } from "vue";
-import { OrderStatus, PayType } from "../dict";
+import { LotteryPickupStatus, OrderStatus, PayType } from "../dict";
 import OrderUserItem from "../components/user-item.vue";
 import OrderLogisticsItem from "../components/logistics-item.vue";
 import OrderPayItem from "../components/pay-item.vue";
@@ -68,6 +68,7 @@ const { service } = useCool();
 const options = reactive({
   payType: PayType,
   status: OrderStatus,
+  lotteryPickupStatus: LotteryPickupStatus,
   goods: [] as Array<{ label: string; value: number }>,
   userType: [
     { label: "真人", value: 0 },
@@ -144,6 +145,13 @@ const Table = useTable<Eps.OrderInfoEntity>({
       prop: "createTime",
       minWidth: 160,
       sortable: "desc",
+    },
+    {
+      label: "领奖状态",
+      prop: "lotteryPickupStatus",
+      dict: options.lotteryPickupStatus,
+      minWidth: 130,
+      fixed: "right",
     },
     {
       label: "状态",

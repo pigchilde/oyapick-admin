@@ -124,6 +124,22 @@ function syncLotteryStatusField(form?: any) {
 		Upsert.value?.mode === 'update' && Number(data?.lotteryStatus) === 3 && isFutureDateTime(data?.endTime);
 }
 
+function getPickupStatusLabel(row: any) {
+	if (row.isLocked) {
+		return '待支付锁定';
+	}
+	if (Number(row.lotteryStatus) === 1) {
+		return '未开奖';
+	}
+	if (Number(row.lotteryStatus) === 3) {
+		return '已取消';
+	}
+	if (Number(row.lotteryStatus) === 2) {
+		return Number(row.isPickupVerified) === 1 ? '已核销' : '待领取';
+	}
+	return '-';
+}
+
 const options = reactive({
 	type: [] as Dict.Item[],
 	lotteryStatus: [
@@ -365,6 +381,38 @@ const Upsert = useUpsert({
 		},
 		{
 			group: 'base',
+			label: '预占份数',
+			prop: 'reservedCount',
+			hook: 'number',
+			span: 12,
+			component: {
+				name: 'el-input-number',
+				props: {
+					min: 0,
+					max: 1000000,
+					precision: 0,
+					disabled: true
+				}
+			}
+		},
+		{
+			group: 'base',
+			label: '可售份数',
+			prop: 'availableShares',
+			hook: 'number',
+			span: 12,
+			component: {
+				name: 'el-input-number',
+				props: {
+					min: 0,
+					max: 1000000,
+					precision: 0,
+					disabled: true
+				}
+			}
+		},
+		{
+			group: 'base',
 			label: '排序',
 			prop: 'sortNum',
 			span: 12,
@@ -416,6 +464,7 @@ const Upsert = useUpsert({
 const Table = useTable({
 	columns: [
 		{ type: 'selection' },
+		{ label: 'ID', prop: 'id', minWidth: 80 },
 		{ label: '分类', prop: 'typeId', minWidth: 160, dict: computed(() => options.type) },
 		{ label: '标题', prop: 'title', minWidth: 240 },
 		{
@@ -434,11 +483,27 @@ const Table = useTable({
 		{ label: '现价', prop: 'currentPrice', minWidth: 100, sortable: 'custom' },
 		{ label: '总份数', prop: 'totalShares', minWidth: 100 },
 		{ label: '已售份数', prop: 'soldCount', minWidth: 100 },
+		{ label: '预占份数', prop: 'reservedCount', minWidth: 100 },
+		{ label: '可售份数', prop: 'availableShares', minWidth: 100 },
 		{
 			label: '抽奖状态',
 			prop: 'lotteryStatus',
-			minWidth: 100,
-			dict: options.lotteryStatus
+			minWidth: 140,
+			formatter(row: any) {
+				if (row.isLocked) {
+					return '锁满待支付';
+				}
+				const matched = options.lotteryStatus.find(item => item.value === row.lotteryStatus);
+				return matched?.label || row.lotteryStatus;
+			}
+		},
+		{
+			label: '领奖状态',
+			prop: 'pickupStatus',
+			minWidth: 120,
+			formatter(row: any) {
+				return getPickupStatusLabel(row);
+			}
 		},
 		{ label: '开始时间', prop: 'startTime', minWidth: 160, sortable: 'custom' },
 		{ label: '结束时间', prop: 'endTime', minWidth: 160, sortable: 'custom' },
@@ -455,10 +520,14 @@ const Table = useTable({
 			type: 'op',
 			width: 260,
 			buttons({ scope }) {
-				const buttons: any[] = ['edit', 'delete'];
+				const buttons: any[] = [];
 
-				// 只有进行中的抽奖才显示开奖按钮
-				if (scope.row.lotteryStatus === 1) {
+				if (Number(scope.row.lotteryStatus) !== 2 && Number(scope.row.isPickupVerified) !== 1) {
+					buttons.push('edit', 'delete');
+				}
+
+				// 只有允许开奖的商品才显示开奖按钮
+				if (scope.row.canDraw) {
 					buttons.push({
 						label: '开奖',
 						type: 'danger',
