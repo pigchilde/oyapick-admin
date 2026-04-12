@@ -2,7 +2,7 @@
 
 OyaPick 管理后台项目，基于 `Vue 3 + TypeScript + Vite + Element Plus + cool-admin`。
 
-当前仓库用于管理端运营能力，包括商品抽奖、订单、用户、客服、内容与基础权限管理等模块。
+当前仓库用于 OyaPick 抽奖电商系统的管理端运营能力，包括商品抽奖管理、订单、用户、客服、分销、内容与基础权限管理等模块。
 
 ## 项目状态
 
@@ -33,11 +33,12 @@ OyaPick 管理后台项目，基于 `Vue 3 + TypeScript + Vite + Element Plus + 
 ## 功能模块（src/modules）
 
 - `base`：登录、权限、菜单、用户中心、系统基础页
-- `goods`：商品管理（抽奖商品、开奖、提货码核验）
+- `goods`：商品管理（抽奖商品、开奖、提货码核验、抽奖状态管理）
 - `order`：订单与退款管理
 - `market`：营销能力（如优惠券）
 - `user`：用户管理
-- `app`：App 反馈、版本、商品等
+- `distribution`：分销管理（分销商、佣金、提现、配置、统计）
+- `app`：App 反馈、版本、商品投诉等
 - `space`：文件空间
 - `dict`：字典管理
 - `task`：任务管理
