@@ -2098,6 +2098,11 @@ declare namespace Eps {
 		fullName?: string;
 
 		/**
+		 * 国家区号
+		 */
+		countryCode?: string;
+
+		/**
 		 * 手机号
 		 */
 		phone?: string;
@@ -3434,9 +3439,9 @@ declare namespace Eps {
 
 	interface DistributionWithdrawal {
 		/**
-		 * Opay 代付回调
+		 * 重置用户收款账户
 		 */
-		callback(data?: any): Promise<any>;
+		resetRecipient(data?: any): Promise<any>;
 
 		/**
 		 * 手动标记打款失败
@@ -3471,7 +3476,7 @@ declare namespace Eps {
 		 * 权限标识
 		 */
 		permission: {
-			callback: string;
+			resetRecipient: string;
 			markFailed: string;
 			markPaid: string;
 			approve: string;
@@ -3483,7 +3488,7 @@ declare namespace Eps {
 		 * 权限状态
 		 */
 		_permission: {
-			callback: boolean;
+			resetRecipient: boolean;
 			markFailed: boolean;
 			markPaid: boolean;
 			approve: boolean;
