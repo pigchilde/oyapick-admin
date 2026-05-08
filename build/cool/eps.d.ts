@@ -2098,6 +2098,11 @@ declare namespace Eps {
 		fullName?: string;
 
 		/**
+		 * 国家区号
+		 */
+		countryCode?: string;
+
+		/**
 		 * 手机号
 		 */
 		phone?: string;

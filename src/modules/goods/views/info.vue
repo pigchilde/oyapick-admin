@@ -120,8 +120,7 @@ const showLotteryStatusField = ref(false);
 
 function syncLotteryStatusField(form?: any) {
 	const data = form || (Upsert.value as any)?.form;
-	showLotteryStatusField.value =
-		Upsert.value?.mode === 'update' && Number(data?.lotteryStatus) === 3 && isFutureDateTime(data?.endTime);
+	showLotteryStatusField.value = Upsert.value?.mode === 'update';
 }
 
 function getPickupStatusLabel(row: any) {
