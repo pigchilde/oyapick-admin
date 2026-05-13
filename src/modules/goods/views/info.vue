@@ -117,7 +117,6 @@ function isFutureDateTime(value?: string | Date) {
 }
 
 const showLotteryStatusField = ref(false);
-
 function syncLotteryStatusField(form?: any) {
 	const data = form || (Upsert.value as any)?.form;
 	showLotteryStatusField.value = Upsert.value?.mode === 'update';
@@ -141,6 +140,16 @@ function getPickupStatusLabel(row: any) {
 
 const options = reactive({
 	type: [] as Dict.Item[],
+	entryMode: [
+		{
+			label: '付费参与',
+			value: 0
+		},
+		{
+			label: '免费参与',
+			value: 1
+		}
+	],
 	lotteryStatus: [
 		{
 			label: '进行中',
@@ -193,6 +202,32 @@ const Upsert = useUpsert({
 		},
 		{
 			group: 'base',
+			label: '参与模式',
+			prop: 'entryMode',
+			value: 0,
+			component: {
+				name: 'cl-select',
+				props: {
+					options: computed(() => options.entryMode),
+					clearable: false,
+					onChange: (value: number) => {
+						const form = (Upsert.value as any)?.form;
+						if (!form) return;
+						form.entryMode = value;
+						if (Number(value) === 1) {
+							form.was = 0;
+							form.currentPrice = 0;
+							form.price = 0;
+						} else {
+							form.totalShares = calcTotalShares(form.price, form.currentPrice) ?? undefined;
+						}
+					}
+				}
+			},
+			required: true
+		},
+		{
+			group: 'base',
 			label: '标题',
 			prop: 'title',
 			component: { name: 'el-input', props: { clearable: true } },
@@ -217,91 +252,124 @@ const Upsert = useUpsert({
 			prop: 'pics',
 			component: { name: 'cl-upload', props: { multiple: true, draggable: true } }
 		},
-		{
-			group: 'base',
-			label: '原价',
-			prop: 'was',
-			hook: 'number',
-			span: 12,
-			component: {
-				name: 'el-input-number',
-				props: {
-					min: 0.01,
-					max: 1000000,
-					precision: 2
-				}
-			},
-			required: true
+		() => {
+			return {
+				group: 'base',
+				label: '原价',
+				prop: 'was',
+				hidden: ({ scope }) => Number(scope.entryMode || 0) === 1,
+				hook: 'number',
+				span: 12,
+				component: {
+					name: 'el-input-number',
+					props: {
+						min: 0.01,
+						max: 1000000,
+						precision: 2
+					}
+				},
+				required: true
+			};
 		},
-		{
-			group: 'base',
-			label: '现价',
-			prop: 'currentPrice',
-			hook: 'number',
-			span: 12,
-			component: {
-				name: 'el-input-number',
-				props: {
-					min: 0.01,
-					max: 1000000,
-					precision: 2,
-					onChange: () => {
-						syncTotalShares();
-					},
-					onInput: () => {
-						syncTotalShares();
-					},
-					'onUpdate:modelValue': () => {
-						syncTotalShares();
+		() => {
+			return {
+				group: 'base',
+				label: '现价',
+				prop: 'currentPrice',
+				hidden: ({ scope }) => Number(scope.entryMode || 0) === 1,
+				hook: 'number',
+				span: 12,
+				component: {
+					name: 'el-input-number',
+					props: {
+						min: 0.01,
+						max: 1000000,
+						precision: 2,
+						onChange: () => {
+							syncTotalShares();
+						},
+						onInput: () => {
+							syncTotalShares();
+						},
+						'onUpdate:modelValue': () => {
+							syncTotalShares();
+						}
+					}
+				},
+				required: true
+			};
+		},
+		() => {
+			return {
+				group: 'base',
+				label: '单价',
+				prop: 'price',
+				hidden: ({ scope }) => Number(scope.entryMode || 0) === 1,
+				hook: 'number',
+				span: 12,
+				component: {
+					name: 'el-input-number',
+					props: {
+						min: 0.01,
+						max: 1000000,
+						precision: 2,
+						onChange: () => {
+							syncTotalShares();
+						},
+						onInput: () => {
+							syncTotalShares();
+						},
+						'onUpdate:modelValue': () => {
+							syncTotalShares();
+						}
+					}
+				},
+				required: true
+			};
+		},
+		() => {
+			return {
+				group: 'base',
+				label: '总份数',
+				prop: 'totalShares',
+				span: 12,
+				component: {
+					name: 'el-input-number',
+					props: {
+						min: 1,
+						max: 1000000,
+						precision: 0,
+						disabled: false
+					}
+				},
+				hook: {
+					bind(value, { form }) {
+						if (Number(form.entryMode || 0) === 1) {
+							return value;
+						}
+						return calcTotalShares(form.price, form.currentPrice) ?? value;
 					}
 				}
-			},
-			required: true
+			};
 		},
-		{
-			group: 'base',
-			label: '单价',
-			prop: 'price',
-			hook: 'number',
-			span: 12,
-			component: {
-				name: 'el-input-number',
-				props: {
-					min: 0.01,
-					max: 1000000,
-					precision: 2,
-					onChange: () => {
-						syncTotalShares();
-					},
-					onInput: () => {
-						syncTotalShares();
-					},
-					'onUpdate:modelValue': () => {
-						syncTotalShares();
+		() => {
+			return {
+				group: 'base',
+				label: '每用户限购份数',
+				prop: 'perUserLimit',
+				hidden: ({ scope }) => Number(scope.entryMode || 0) !== 1,
+				hook: 'number',
+				span: 12,
+				component: {
+					name: 'el-input-number',
+					props: {
+						min: 1,
+						max: 1000000,
+						precision: 0
 					}
-				}
-			},
-			required: true
-		},
-		{
-			group: 'base',
-			label: '总份数',
-			prop: 'totalShares',
-			hook: {
-				bind(value, { form }) {
-					return calcTotalShares(form.price, form.currentPrice) ?? value;
-				}
-			},
-			span: 12,
-			component: {
-				name: 'el-input-number',
-				props: {
-					min: 1,
-					max: 1000000,
-					precision: 0,
-					disabled: true
-				}
-			}
+				},
+				required: true
+			};
 		},
 
 		{
@@ -436,15 +504,45 @@ const Upsert = useUpsert({
 		}
 	],
 	onOpened(data) {
-		data.totalShares = calcTotalShares(data.price, data.currentPrice) ?? data.totalShares;
+		if (Number(data.entryMode || 0) === 1) {
+			data.was = Number(data.was || 0);
+			data.currentPrice = Number(data.currentPrice || 0);
+			data.price = Number(data.price || 0);
+		} else {
+			data.totalShares = calcTotalShares(data.price, data.currentPrice) ?? data.totalShares;
+		}
 		syncLotteryStatusField(data);
 	},
 	onSubmit(data, { next, done }) {
-		const shares = calcTotalShares(data.price, data.currentPrice);
-		if (!shares) {
-			ElMessage.error('现价必须能被单价整除，且两者都要大于0');
-			done();
-			return;
+		const isFreeMode = Number(data.entryMode || 0) === 1;
+		if (isFreeMode) {
+			if (!Number.isInteger(Number(data.totalShares)) || Number(data.totalShares) <= 0) {
+				ElMessage.error('免费参与商品的总份数必须大于 0');
+				done();
+				return;
+			}
+			if (!Number.isInteger(Number(data.perUserLimit)) || Number(data.perUserLimit) <= 0) {
+				ElMessage.error('请填写每用户限购份数');
+				done();
+				return;
+			}
+			if (Number(data.perUserLimit) > Number(data.totalShares)) {
+				ElMessage.error('每用户限购份数不能大于总份数');
+				done();
+				return;
+			}
+			data.was = 0;
+			data.currentPrice = 0;
+			data.price = 0;
+		} else {
+			const shares = calcTotalShares(data.price, data.currentPrice);
+			if (!shares) {
+				ElMessage.error('现价必须能被单价整除，且两者都要大于0');
+				done();
+				return;
+			}
+			data.totalShares = shares;
+			data.perUserLimit = 0;
 		}
 		if (!showLotteryStatusField.value) {
 			delete data.lotteryStatus;
@@ -454,7 +552,6 @@ const Upsert = useUpsert({
 			done();
 			return;
 		}
-		data.totalShares = shares;
 		next(data);
 	}
 });
@@ -466,6 +563,14 @@ const Table = useTable({
 		{ label: 'ID', prop: 'id', minWidth: 80 },
 		{ label: '分类', prop: 'typeId', minWidth: 160, dict: computed(() => options.type) },
 		{ label: '标题', prop: 'title', minWidth: 240 },
+		{
+			label: '参与模式',
+			prop: 'entryMode',
+			minWidth: 120,
+			formatter(row: any) {
+				return Number(row.entryMode) === 1 ? '免费参与' : '付费参与';
+			}
+		},
 		{
 			label: '主图',
 			prop: 'mainPic',
@@ -481,6 +586,7 @@ const Table = useTable({
 		{ label: '单价', prop: 'price', minWidth: 100, sortable: 'custom' },
 		{ label: '现价', prop: 'currentPrice', minWidth: 100, sortable: 'custom' },
 		{ label: '总份数', prop: 'totalShares', minWidth: 100 },
+		{ label: '每用户限购', prop: 'perUserLimit', minWidth: 120 },
 		{ label: '已售份数', prop: 'soldCount', minWidth: 100 },
 		{ label: '预占份数', prop: 'reservedCount', minWidth: 100 },
 		{ label: '可售份数', prop: 'availableShares', minWidth: 100 },

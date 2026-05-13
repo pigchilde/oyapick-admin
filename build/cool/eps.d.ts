@@ -1018,6 +1018,16 @@ declare namespace Eps {
 		sold?: number;
 
 		/**
+		 * 参与模式 0-付费参与 1-免费参与
+		 */
+		entryMode?: number;
+
+		/**
+		 * 每个用户限购份数，0表示不限制
+		 */
+		perUserLimit?: number;
+
+		/**
 		 * 详情
 		 */
 		content?: string;
@@ -1432,7 +1442,7 @@ declare namespace Eps {
 		title?: string;
 
 		/**
-		 * 支付方式 0-待支付 1-Opay 2-其他
+		 * 支付方式 0-待支付 1-Opay 2-其他 3-免费
 		 */
 		payType?: number;
 

@@ -12,7 +12,8 @@ export const OrderStatus = [
 export const PayType = [
 	{ label: "待支付", value: 0, type: "info" },
 	{ label: "Opay", value: 1, color: "#2aae67" },
-	{ label: "其他", value: 2, color: "#1678FF" }
+	{ label: "其他", value: 2, color: "#1678FF" },
+	{ label: "免费", value: 3, type: "success" }
 ];
 
 export const LotteryPickupStatus = [

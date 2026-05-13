@@ -3,6 +3,7 @@
 		<el-tag v-if="scope.payType == 0" effect="dark" type="info">未支付</el-tag>
 		<el-tag v-else-if="scope.payType == 1" effect="dark" color="#2aae67">Opay</el-tag>
 		<el-tag v-else-if="scope.payType == 2" effect="dark" color="#1678FF">其他</el-tag>
+		<el-tag v-else-if="scope.payType == 3" effect="dark" type="success">免费</el-tag>
 
 		<p :style="{ marginTop: '5px' }">{{ scope.payTime }}</p>
 	</div>
