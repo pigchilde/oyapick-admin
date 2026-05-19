@@ -31,19 +31,19 @@ import Lodash from '../static/lodash.png';
 
 const list = ref([
 	{
-		label: 'cool',
+		label: 'OyaPick',
 		icon: Cool,
-		link: 'https://cool-js.com/'
+		link: 'https://oyapick.org/'
 	},
 	{
 		label: 'vue',
-		icon: Cool,
-		link: 'https://vue.cool-admin.com/'
+		icon: Vue,
+		link: 'https://cn.vuejs.org/'
 	},
 	{
 		label: 'node',
-		icon: Cool,
-		link: 'https://node.cool-admin.com/'
+		icon: Vite,
+		link: 'https://nodejs.org/'
 	},
 	{
 		label: 'vue',

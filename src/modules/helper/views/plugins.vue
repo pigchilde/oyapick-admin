@@ -330,7 +330,7 @@ const tab = reactive({
 			tab.active = tab.p || 'installed';
 
 			nextTick(() => {
-				window.open('https://cool-js.com/plugin/create');
+				window.open('https://oyapick.org/plugin/create');
 			});
 		} else {
 			tab.p = val;
@@ -517,7 +517,7 @@ const plugin = reactive({
 							name: '',
 							logo: e.avatarUrl,
 							author: e.nickName,
-							doc: `https://cool-js.com/plugin/${e.id}`
+							doc: `https://oyapick.org/plugin/${e.id}`
 						};
 					});
 
@@ -547,7 +547,7 @@ const plugin = reactive({
 					)
 					.map(e => {
 						if (e.author == 'COOL') {
-							e.logo = 'https://cool-js.com/logo.png';
+							e.logo = 'https://oyapick.org/logo.png';
 						}
 
 						const isVue = e.type == 'plugins';
