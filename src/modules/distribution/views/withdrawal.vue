@@ -41,7 +41,8 @@ const options = reactive({
 		{ label: '打款中', value: 1, type: '' },
 		{ label: '已打款', value: 2, type: 'success' },
 		{ label: '已驳回', value: 3, type: 'danger' },
-		{ label: '打款失败', value: 4, type: 'info' }
+		{ label: '打款失败', value: 4, type: 'info' },
+		{ label: '已冲正', value: 6, type: 'warning' }
 	]
 });
 
@@ -52,6 +53,9 @@ const Table = useTable({
 		{ label: 'ID', prop: 'id', minWidth: 90 },
 		{ label: '申请单号', prop: 'applyNo', minWidth: 200 },
 		{ label: '用户ID', prop: 'userId', minWidth: 100 },
+		{ label: '收款银行', prop: 'bankName', minWidth: 210 },
+		{ label: '收款账号', prop: 'accountNo', minWidth: 140 },
+		{ label: '收款姓名', prop: 'accountName', minWidth: 160 },
 		{ label: '申请金额', prop: 'applyAmount', minWidth: 110, sortable: 'custom' },
 		{ label: '手续费', prop: 'feeAmount', minWidth: 100 },
 		{ label: '实发金额', prop: 'actualAmount', minWidth: 110, sortable: 'custom' },
@@ -61,10 +65,17 @@ const Table = useTable({
 			minWidth: 100,
 			dict: options.status
 		},
+		{ label: 'Paystack状态', prop: 'paystackStatus', minWidth: 130 },
+		{ label: 'Transfer Code', prop: 'transferCode', minWidth: 190 },
+		{ label: 'Transfer Ref', prop: 'transferReference', minWidth: 190 },
+		{ label: '失败原因', prop: 'failureReason', minWidth: 180 },
+		{ label: '驳回原因', prop: 'rejectReason', minWidth: 180 },
+		{ label: '审核时间', prop: 'auditAt', minWidth: 160 },
+		{ label: '完成时间', prop: 'completedAt', minWidth: 160 },
 		{ label: '申请时间', prop: 'createTime', minWidth: 160, sortable: 'desc' },
 		{
 			type: 'op',
-			width: 280,
+			width: 360,
 			buttons: [
 				{
 					label: '通过',
@@ -72,8 +83,8 @@ const Table = useTable({
 					onClick({ scope }) {
 						handleApprove(scope.row);
 					},
-					show({ scope }) {
-						return scope.row.status === 0;
+					hidden({ scope }) {
+						return Number(scope.row.status) !== 0;
 					}
 				},
 				{
@@ -82,8 +93,18 @@ const Table = useTable({
 					onClick({ scope }) {
 						handleReject(scope.row);
 					},
-					show({ scope }) {
-						return scope.row.status === 0;
+					hidden({ scope }) {
+						return Number(scope.row.status) !== 0;
+					}
+				},
+				{
+					label: '确认OTP',
+					type: 'success',
+					onClick({ scope }) {
+						handleConfirmPayout(scope.row);
+					},
+					hidden({ scope }) {
+						return Number(scope.row.status) !== 1 || !scope.row.transferCode;
 					}
 				},
 				{
@@ -92,8 +113,8 @@ const Table = useTable({
 					onClick({ scope }) {
 						handleMarkPaid(scope.row);
 					},
-					show({ scope }) {
-						return scope.row.status === 1;
+					hidden({ scope }) {
+						return Number(scope.row.status) !== 1;
 					}
 				},
 				{
@@ -102,8 +123,8 @@ const Table = useTable({
 					onClick({ scope }) {
 						handleMarkFailed(scope.row);
 					},
-					show({ scope }) {
-						return scope.row.status === 1;
+					hidden({ scope }) {
+						return Number(scope.row.status) !== 1;
 					}
 				}
 			]
@@ -122,8 +143,11 @@ const Crud = useCrud(
 );
 
 async function handleApprove(row: any) {
-	await service.distribution.withdrawal.approve({ id: row.id, autoPay: false });
-	ElMessage.success('审核通过');
+	await ElMessageBox.confirm('审核通过后会发起 Paystack Transfer，确认继续吗？', '提现审核', {
+		type: 'warning'
+	});
+	await service.distribution.withdrawal.approve({ id: row.id, autoPay: true });
+	ElMessage.success('已审核并发起打款');
 	Crud.value?.refresh();
 }
 
@@ -145,6 +169,23 @@ async function handleMarkPaid(row: any) {
 async function handleMarkFailed(row: any) {
 	await service.distribution.withdrawal.markFailed({ id: row.id, reason: '人工标记失败' });
 	ElMessage.success('已标记失败');
+	Crud.value?.refresh();
+}
+
+async function handleConfirmPayout(row: any) {
+	const value = await ElMessageBox.prompt('请输入 Paystack 发送的 OTP', '确认打款', {
+		inputPattern: /^\d+$/,
+		inputErrorMessage: '请输入数字 OTP'
+	});
+	await service.request({
+		url: '/admin/distribution/withdrawal/confirmPayout',
+		method: 'POST',
+		data: {
+			id: row.id,
+			otp: value.value
+		}
+	});
+	ElMessage.success('OTP 已提交');
 	Crud.value?.refresh();
 }
 </script>
