@@ -46,6 +46,69 @@ const options = reactive({
 	]
 });
 
+function buildRowButtons(row: any) {
+	const status = Number(row?.status);
+	const buttons: any[] = [];
+
+	if (status === 0) {
+		buttons.push(
+			{
+				label: '通过',
+				type: 'success',
+				onClick({ scope }) {
+					handleApprove(scope.row);
+				}
+			},
+			{
+				label: '驳回',
+				type: 'danger',
+				onClick({ scope }) {
+					handleReject(scope.row);
+				}
+			}
+		);
+	}
+
+	if (status === 1) {
+		buttons.push({
+			label: '同步状态',
+			type: 'primary',
+			onClick({ scope }) {
+				handleSyncPaystack(scope.row);
+			}
+		});
+
+		if (row?.transferCode) {
+			buttons.push({
+				label: '确认OTP',
+				type: 'success',
+				onClick({ scope }) {
+					handleConfirmPayout(scope.row);
+				}
+			});
+		}
+
+		buttons.push(
+			{
+				label: '标记成功',
+				type: 'primary',
+				onClick({ scope }) {
+					handleMarkPaid(scope.row);
+				}
+			},
+			{
+				label: '标记失败',
+				type: 'warning',
+				onClick({ scope }) {
+					handleMarkFailed(scope.row);
+				}
+			}
+		);
+	}
+
+	return buttons;
+}
+
 // cl-table
 const Table = useTable({
 	columns: [
@@ -76,58 +139,7 @@ const Table = useTable({
 		{
 			type: 'op',
 			width: 360,
-			buttons: [
-				{
-					label: '通过',
-					type: 'success',
-					onClick({ scope }) {
-						handleApprove(scope.row);
-					},
-					hidden({ scope }) {
-						return Number(scope.row.status) !== 0;
-					}
-				},
-				{
-					label: '驳回',
-					type: 'danger',
-					onClick({ scope }) {
-						handleReject(scope.row);
-					},
-					hidden({ scope }) {
-						return Number(scope.row.status) !== 0;
-					}
-				},
-				{
-					label: '确认OTP',
-					type: 'success',
-					onClick({ scope }) {
-						handleConfirmPayout(scope.row);
-					},
-					hidden({ scope }) {
-						return Number(scope.row.status) !== 1 || !scope.row.transferCode;
-					}
-				},
-				{
-					label: '标记成功',
-					type: 'primary',
-					onClick({ scope }) {
-						handleMarkPaid(scope.row);
-					},
-					hidden({ scope }) {
-						return Number(scope.row.status) !== 1;
-					}
-				},
-				{
-					label: '标记失败',
-					type: 'warning',
-					onClick({ scope }) {
-						handleMarkFailed(scope.row);
-					},
-					hidden({ scope }) {
-						return Number(scope.row.status) !== 1;
-					}
-				}
-			]
+			buttons: ({ scope }) => buildRowButtons(scope.row)
 		}
 	]
 });
@@ -157,6 +169,21 @@ async function handleReject(row: any) {
 	});
 	await service.distribution.withdrawal.reject({ id: row.id, reason: value.value || '风控驳回' });
 	ElMessage.success('已驳回');
+	Crud.value?.refresh();
+}
+
+async function handleSyncPaystack(row: any) {
+	const res = await service.request({
+		url: '/admin/distribution/withdrawal/syncPaystack',
+		method: 'POST',
+		data: {
+			id: row.id
+		}
+	});
+	const data = res?.data || res;
+	const statusText = options.status.find(item => item.value === Number(data?.status))?.label;
+	const paystackStatus = data?.paystackStatus ? `Paystack: ${data.paystackStatus}` : '';
+	ElMessage.success(['已同步 Paystack 状态', statusText, paystackStatus].filter(Boolean).join('，'));
 	Crud.value?.refresh();
 }
 
