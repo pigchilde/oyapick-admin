@@ -29,8 +29,11 @@
 				<el-form-item label="手续费值">
 					<el-input-number v-model="form.withdrawFeeValue" :min="0" :precision="2" />
 				</el-form-item>
+				<el-form-item label="推广说明">
+					<cl-editor-wang v-model="form.posterProgressContent" class="config-editor" />
+				</el-form-item>
 				<el-form-item label="分销协议">
-					<el-input v-model="form.agreementContent" type="textarea" :rows="8" />
+					<cl-editor-wang v-model="form.agreementContent" class="config-editor" />
 				</el-form-item>
 			</el-form>
 		</cl-row>
@@ -51,6 +54,7 @@ interface DistributionConfigForm {
 	minWithdrawAmount: number;
 	withdrawFeeType: number;
 	withdrawFeeValue: number;
+	posterProgressContent: string;
 	agreementContent: string;
 }
 
@@ -61,6 +65,7 @@ const form = reactive<DistributionConfigForm>({
 	minWithdrawAmount: 100,
 	withdrawFeeType: 0,
 	withdrawFeeValue: 0,
+	posterProgressContent: '',
 	agreementContent: ''
 });
 
@@ -92,3 +97,10 @@ async function save() {
 
 onMounted(load);
 </script>
+
+<style lang="scss" scoped>
+.config-editor {
+	width: 100%;
+	min-width: 640px;
+}
+</style>
