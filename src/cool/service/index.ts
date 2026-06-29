@@ -40,11 +40,65 @@ function createBaseOpenService() {
 	};
 }
 
+function createBaseCommService() {
+	const comm = new BaseService('/admin/base/comm');
+
+	return {
+		namespace: '/admin/base/comm',
+		personUpdate(data?: any) {
+			return comm.request({
+				url: '/personUpdate',
+				method: 'POST',
+				data
+			});
+		},
+		uploadMode(data?: any) {
+			return comm.request({
+				url: '/uploadMode',
+				params: data
+			});
+		},
+		permmenu(data?: any) {
+			return comm.request({
+				url: '/permmenu',
+				params: data
+			});
+		},
+		program(data?: any) {
+			return comm.request({
+				url: '/program',
+				params: data
+			});
+		},
+		person(data?: any) {
+			return comm.request({
+				url: '/person',
+				params: data
+			});
+		},
+		upload(data?: any) {
+			return comm.request({
+				url: '/upload',
+				method: 'POST',
+				data
+			});
+		},
+		logout(data?: any) {
+			return comm.request({
+				url: '/logout',
+				method: 'POST',
+				data
+			});
+		}
+	};
+}
+
 // service 数据集合
 export const service: Eps.Service = hmr.getData('service', {
 	request: new BaseService().request,
 	base: {
-		open: createBaseOpenService()
+		open: createBaseOpenService(),
+		comm: createBaseCommService()
 	}
 });
 
